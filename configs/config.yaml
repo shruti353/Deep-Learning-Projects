@@ -1,0 +1,58 @@
+# Project Configuration
+project:
+  name: "handwritten_digit_recognition"
+  author: "Shruti Thakkar"
+  version: "1.0.0"
+
+# Data Configuration
+data:
+  dataset_name: "mnist"
+  download: true
+  train_size: 60000
+  test_size: 10000
+  image_shape: [28, 28, 1]
+  num_classes: 10
+  validation_split: 0.2
+  batch_size: 32
+  shuffle: true
+  
+# Model Configuration
+model:
+  architecture: "CNN"
+  layers:
+    conv1:
+      filters: 32
+      kernel_size: [3, 3]
+      activation: "relu"
+      padding: "same"
+    conv2:
+      filters: 64
+      kernel_size: [3, 3]
+      activation: "relu"
+      padding: "same"
+    dense:
+      units: 128
+      activation: "relu"
+  dropout_rate: 0.5
+  use_batch_norm: true
+
+# Training Configuration
+training:
+  epochs: 10
+  learning_rate: 0.001
+  optimizer: "adam"
+  loss: "sparse_categorical_crossentropy"
+  metrics: ["accuracy"]
+  early_stopping:
+    patience: 5
+    monitor: "val_loss"
+  model_checkpoint:
+    save_best_only: true
+    monitor: "val_accuracy"
+    
+# Paths
+paths:
+  data_dir: "data/"
+  model_dir: "artifacts/models/"
+  log_dir: "artifacts/logs/"
+  results_dir: "artifacts/results/"
