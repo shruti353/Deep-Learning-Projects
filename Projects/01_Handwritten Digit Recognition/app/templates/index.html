@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handwritten Digit Recognition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 30px;
+            gap: 30px;
+        }
+        
+        .input-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .output-section {
+            flex: 1;
+            min-width: 300px;
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 25px;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #4f46e5;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .upload-box {
+            border: 3px dashed #cbd5e1;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 25px;
+        }
+        
+        .upload-box:hover {
+            border-color: #4f46e5;
+            background: #f1f5f9;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: #94a3b8;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            color: #64748b;
+            margin-bottom: 10px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .canvas-container {
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        #drawingCanvas {
+            background: white;
+            cursor: crosshair;
+            display: block;
+            width: 100%;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex: 1;
+        }
+        
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #4338ca;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        
+        .btn-secondary:hover {
+            background: #cbd5e1;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+        
+        .prediction-result {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .predicted-digit {
+            font-size: 8rem;
+            font-weight: bold;
+            color: #4f46e5;
+            margin: 20px 0;
+            text-shadow: 3px 3px 0 #e0e7ff;
+        }
+        
+        .confidence {
+            font-size: 1.2rem;
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+        
+        .confidence-bar {
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+            border-radius: 5px;
+            width: 0%;
+            transition: width 1s ease;
+        }
+        
+        .probabilities-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .probability-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .probability-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .probability-digit {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+        
+        .probability-value {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 5px;
+        }
+        
+        .highlight {
+            background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+            border: 2px solid #4f46e5;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #4f46e5;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .predicted-digit {
+                font-size: 6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-robot"></i> Handwritten Digit Recognition</h1>
+            <p class="subtitle">Upload an image or draw a digit to see AI prediction</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="input-section">
+                <h2 class="section-title"><i class="fas fa-upload"></i> Input Methods</h2>
+                
+                <!-- File Upload -->
+                <div class="upload-box" id="uploadBox">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <p class="upload-text">Click to upload an image</p>
+                    <p style="color: #94a3b8; font-size: 0.9rem;">Supports JPG, PNG, BMP</p>
+                    <input type="file" id="fileInput" class="file-input" accept="image/*">
+                </div>
+                
+                <!-- Drawing Canvas -->
+                <h3 style="margin: 20px 0 10px; color: #475569;">Or draw a digit:</h3>
+                <div class="canvas-container">
+                    <canvas id="drawingCanvas" width="400" height="400"></canvas>
+                </div>
+                
+                <!-- Canvas Controls -->
+                <div class="button-group">
+                    <button class="btn btn-primary" id="predictDrawing">
+                        <i class="fas fa-brain"></i> Predict Drawing
+                    </button>
+                    <button class="btn btn-secondary" id="clearCanvas">
+                        <i class="fas fa-eraser"></i> Clear
+                    </button>
+                    <button class="btn btn-danger" id="undoStroke">
+                        <i class="fas fa-undo"></i> Undo
+                    </button>
+                </div>
+                
+                <!-- Preview -->
+                <div id="previewContainer" style="margin-top: 20px; display: none;">
+                    <h3 style="margin-bottom: 10px; color: #475569;">Preview:</h3>
+                    <img id="previewImage" style="max-width: 200px; border-radius: 10px;">
+                </div>
+            </div>
+            
+            <div class="output-section">
+                <h2 class="section-title"><i class="fas fa-chart-line"></i> Prediction Results</h2>
+                
+                <!-- Loading Animation -->
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Analyzing your digit...</p>
+                </div>
+                
+                <!-- Results -->
+                <div id="results" style="display: none;">
+                    <div class="prediction-result">
+                        <h3 style="color: #64748b;">Predicted Digit:</h3>
+                        <div class="predicted-digit" id="predictedDigit">5</div>
+                        <div class="confidence">
+                            Confidence: <span id="confidenceValue">95.2%</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="confidenceBar"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Probabilities -->
+                    <h3 style="margin: 30px 0 15px; color: #475569;">Probabilities for each digit:</h3>
+                    <div class="probabilities-grid" id="probabilitiesGrid">
+                        <!-- Will be filled by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Initial State -->
+                <div id="initialState">
+                    <div style="text-align: center; padding: 40px 20px;">
+                        <div style="font-size: 4rem; color: #cbd5e1; margin-bottom: 20px;">
+                            <i class="fas fa-hand-point-left"></i>
+                        </div>
+                        <h3 style="color: #94a3b8; margin-bottom: 10px;">No prediction yet</h3>
+                        <p style="color: #94a3b8;">Upload an image or draw a digit to get started!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Handwritten Digit Recognition using CNN | Built with TensorFlow & Flask</p>
+            <p>Project 1 of Deep Learning Portfolio</p>
+        </footer>
+    </div>
+
+    <script>
+        // Canvas drawing functionality
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBox = document.getElementById('uploadBox');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImage = document.getElementById('previewImage');
+        const predictDrawingBtn = document.getElementById('predictDrawing');
+        const clearCanvasBtn = document.getElementById('clearCanvas');
+        const undoStrokeBtn = document.getElementById('undoStroke');
+        
+        // Results elements
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const initialState = document.getElementById('initialState');
+        const predictedDigit = document.getElementById('predictedDigit');
+        const confidenceValue = document.getElementById('confidenceValue');
+        const confidenceBar = document.getElementById('confidenceBar');
+        const probabilitiesGrid = document.getElementById('probabilitiesGrid');
+        
+        // Drawing variables
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let strokes = [];
+        let currentStroke = [];
+        
+        // Set canvas background to white
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.lineWidth = 15;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = 'black';
+        
+        // Drawing functions
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('touchstart', startDrawingTouch);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('touchmove', drawTouch);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('touchend', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+        
+        function startDrawing(e) {
+            isDrawing = true;
+            [lastX, lastY] = getMousePos(canvas, e);
+            currentStroke = [[lastX, lastY]];
+        }
+        
+        function startDrawingTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        }
+        
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            const [x, y] = getMousePos(canvas, e);
+            
+            // Draw line
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            
+            // Update last position
+            [lastX, lastY] = [x, y];
+            
+            // Add point to current stroke
+            currentStroke.push([x, y]);
+        }
+        
+        function drawTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        }
+        
+        function stopDrawing() {
+            if (!isDrawing) return;
+            isDrawing = false;
+            
+            // Save stroke
+            if (currentStroke.length > 0) {
+                strokes.push([...currentStroke]);
+                currentStroke = [];
+            }
+        }
+        
+        function getMousePos(canvas, e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return [
+                (e.clientX - rect.left) * scaleX,
+                (e.clientY - rect.top) * scaleY
+            ];
+        }
+        
+        // Clear canvas
+        clearCanvasBtn.addEventListener('click', () => {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            strokes = [];
+            currentStroke = [];
+        });
+        
+        // Undo last stroke
+        undoStrokeBtn.addEventListener('click', () => {
+            if (strokes.length === 0) return;
+            
+            // Clear canvas
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Remove last stroke
+            strokes.pop();
+            
+            // Redraw all strokes except the last one
+            strokes.forEach(stroke => {
+                if (stroke.length < 2) return;
+                
+                ctx.beginPath();
+                ctx.moveTo(stroke[0][0], stroke[0][1]);
+                
+                for (let i = 1; i < stroke.length; i++) {
+                    ctx.lineTo(stroke[i][0], stroke[i][1]);
+                }
+                ctx.stroke();
+            });
+        });
+        
+        // File upload handling
+        uploadBox.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Validate file type
+            if (!file.type.match('image.*')) {
+                alert('Please select an image file');
+                return;
+            }
+            
+            // Preview image
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewContainer.style.display = 'block';
+                
+                // Predict the uploaded image
+                predictFile(file);
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        // Predict drawing
+        predictDrawingBtn.addEventListener('click', () => {
+            predictCanvas();
+        });
+        
+        // Prediction functions
+        async function predictFile(file) {
+            showLoading();
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                displayResults(result);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error predicting image');
+                hideLoading();
+            }
+        }
+        
+        async function predictCanvas() {
+            showLoading();
+            
+            // Convert canvas to base64
+            const imageData = canvas.toDataURL('image/png');
+            
+            try {
+                const response = await fetch('/draw', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ image: imageData })
+                });
+                
+                const result = await response.json();
+                displayResults(result);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error predicting drawing');
+                hideLoading();
+            }
+        }
+        
+        // Display results
+        function displayResults(result) {
+            hideLoading();
+            
+            if (!result.success) {
+                alert('Prediction failed: ' + result.error);
+                return;
+            }
+            
+            // Show results, hide initial state
+            results.style.display = 'block';
+            initialState.style.display = 'none';
+            
+            // Update prediction
+            predictedDigit.textContent = result.prediction;
+            
+            // Update confidence
+            const confidencePercent = (result.confidence * 100).toFixed(1);
+            confidenceValue.textContent = `${confidencePercent}%`;
+            
+            // Animate confidence bar
+            confidenceBar.style.width = `${confidencePercent}%`;
+            
+            // Update probabilities
+            updateProbabilities(result.probabilities, result.prediction);
+        }
+        
+        function updateProbabilities(probabilities, predictedDigit) {
+            probabilitiesGrid.innerHTML = '';
+            
+            probabilities.forEach((prob, index) => {
+                const probPercent = (prob * 100).toFixed(1);
+                
+                const item = document.createElement('div');
+                item.className = `probability-item ${index == predictedDigit ? 'highlight' : ''}`;
+                
+                item.innerHTML = `
+                    <div class="probability-digit">${index}</div>
+                    <div class="probability-value">${probPercent}%</div>
+                `;
+                
+                probabilitiesGrid.appendChild(item);
+            });
+        }
+        
+        function showLoading() {
+            loading.style.display = 'block';
+            results.style.display = 'none';
+            initialState.style.display = 'none';
+        }
+        
+        function hideLoading() {
+            loading.style.display = 'none';
+        }
+        
+        // Initialize probabilities grid
+        for (let i = 0; i < 10; i++) {
+            const item = document.createElement('div');
+            item.className = 'probability-item';
+            item.innerHTML = `
+                <div class="probability-digit">${i}</div>
+                <div class="probability-value">0.0%</div>
+            `;
+            probabilitiesGrid.appendChild(item);
+        }
+    </script>
+</body>
+</html>
